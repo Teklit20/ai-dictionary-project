@@ -13,6 +13,9 @@ public class Word {
     @Column(nullable = false)
     private String text;
 
+    @Column(nullable = true)
+    private String definition;
+
     @Column(nullable = false)
     private String createdBy;
 
@@ -39,5 +42,13 @@ public class Word {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public String getDefinition() {
+        return definition;
+    }
+
+    public void setDefinition(String definition) {
+        this.definition = definition;
     }
 }
