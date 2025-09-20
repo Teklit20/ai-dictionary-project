@@ -1,0 +1,22 @@
+# Java
+target/
+*.iml
+*.class
+*.log
+.springBeans
+.sts4-cache
+.idea/
+.project
+.settings/
+.classpath
+
+# Node
+node_modules/
+build/
+dist/
+*.lock
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

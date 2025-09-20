@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Use Spring Boot parent directly -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.4</version>
+    <relativePath/> <!-- lookup from Maven Central -->
+  </parent>
+
+  <groupId>com.ai.dictionary</groupId>
+  <artifactId>ai-dictionary-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>ai-dictionary-parent</name>
+  <description>AI Dictionary monorepo parent</description>
+
+  <properties>
+    <java.version>17</java.version>
+  </properties>
+
+  <modules>
+    <module>backend/common</module>
+    <module>backend/auth-service</module>
+    <module>backend/word-service</module>
+    <module>backend/ai-service</module>
+  </modules>
+</project>
