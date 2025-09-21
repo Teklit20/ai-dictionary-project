@@ -30,3 +30,16 @@ export function getWords() {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+export function updateWord(id, text, definition) {
+  return axios.put(
+    `${API_WORDS}/${id}`,
+    { text, definition },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+}
+
+export function deleteWord(id) {
+  return axios.delete(`${API_WORDS}/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

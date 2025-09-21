@@ -4,10 +4,13 @@ import com.ai.dictionary.word.model.Word;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-// JPA repository for CRUD operations on Word entity
 public interface WordRepository extends JpaRepository<Word, Long> {
-    // Custom method: find all words by user who created them
-    List<Word> findByCreatedBy(String createdBy);
 
+    // ✅ Get all words owned by a specific user
+    List<Word> findAllByCreatedBy(String createdBy);
+
+    // ✅ Find a single word by id + owner (for update/delete)
+    Optional<Word> findByIdAndCreatedBy(Long id, String createdBy);
 }

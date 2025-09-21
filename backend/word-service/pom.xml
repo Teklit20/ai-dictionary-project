@@ -40,6 +40,18 @@
         <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
+      <!-- Add under <dependencies> -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+      </dependency>
+      
+    <!-- Ensure Java util functions are available -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+    </dependency>
+
     <!-- JWT libraries -->
     <dependency>
         <groupId>io.jsonwebtoken</groupId>
