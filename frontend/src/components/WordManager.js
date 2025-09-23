@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { addWord, getWords, updateWord, deleteWord } from "../services/api";
 
+// Modern card style and spinner for interactive UI
+
 function WordManager({ onLogout }) {
   const [text, setText] = useState("");
   const [definition, setDefinition] = useState("");
@@ -12,6 +14,9 @@ function WordManager({ onLogout }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
+  const [updating, setUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState("");
 
   const loadWords = async () => {
     setLoading(true);
@@ -26,7 +31,9 @@ function WordManager({ onLogout }) {
     }
   };
 
-  useEffect(() => { loadWords(); }, []);
+  useEffect(() => {
+    loadWords();
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -34,11 +41,10 @@ function WordManager({ onLogout }) {
     setError("");
     setSuccess("");
     try {
-      await addWord(text, definition);
+      await addWord(text, "");
       setText("");
-      setDefinition("");
       setSuccess("Word added!");
-      loadWords();
+      await loadWords();
     } catch (err) {
       setError("Failed to add word.");
     } finally {
@@ -49,27 +55,27 @@ function WordManager({ onLogout }) {
   const startEdit = (w) => {
     setEditingId(w.id);
     setEditText(w.text);
-    setEditDefinition(w.definition || "");
+    setUpdateError("");
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditText("");
-    setEditDefinition("");
+    setUpdateError("");
   };
 
   const saveEdit = async (id) => {
-    setLoading(true);
-    setError("");
+    setUpdating(true);
+    setUpdateError("");
     try {
-      await updateWord(id, editText, editDefinition);
+      await updateWord(id, editText, "");
       cancelEdit();
       setSuccess("Word updated!");
       loadWords();
     } catch (err) {
-      setError("Failed to update word.");
+      setUpdateError("Failed to update word. Please try again.");
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
 
@@ -87,9 +93,24 @@ function WordManager({ onLogout }) {
     }
   };
 
+  // Filter words by search (by word)
+  const filteredWords = words.filter(
+    (w) => w.text.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div>
-      <h2 style={{ color: "#22223b", marginBottom: 16 }}>Add Word</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ color: "#22223b", margin: 0 }}>Add Word</h2>
+        <button
+          type="button"
+          onClick={loadWords}
+          style={{ background: "#4a4e69", color: "#fff", border: 0, borderRadius: 6, padding: "8px 18px", fontWeight: 600, cursor: loading ? "not-allowed" : "pointer" }}
+          disabled={loading}
+        >
+          Refresh
+        </button>
+      </div>
       <form onSubmit={handleAdd} style={{ display: "flex", gap: 12, marginBottom: 24 }}>
         <input
           placeholder="Word"
@@ -105,44 +126,56 @@ function WordManager({ onLogout }) {
           Add
         </button>
       </form>
+      <input
+        placeholder="Search words..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        style={{ width: "100%", marginBottom: 20, padding: 8, borderRadius: 6, border: "1px solid #bbb" }}
+      />
       {error && <div style={{ color: "#b00020", marginBottom: 12 }}>{error}</div>}
       {success && <div style={{ color: "#388e3c", marginBottom: 12 }}>{success}</div>}
       <h2 style={{ color: "#22223b", marginTop: 32 }}>My Words</h2>
       {loading ? (
-        <div>Loading...</div>
-      ) : words.length === 0 ? (
+        <div style={{ textAlign: "center", margin: 32 }}>
+          <div className="spinner" style={{ width: 40, height: 40, border: "4px solid #eee", borderTop: "4px solid #4a4e69", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto" }} />
+          <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+        </div>
+      ) : filteredWords.length === 0 ? (
         <div style={{ color: "#888", marginTop: 16 }}>No words found.</div>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0, marginTop: 16 }}>
-          {words.map((w) => (
-            <li key={w.id} style={{ marginBottom: 12, background: "#f2e9e4", borderRadius: 8, padding: 12, display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 16 }}>
+          {filteredWords.map((w) => (
+            <div key={w.id} style={{ background: "#f2e9e4", borderRadius: 10, boxShadow: "0 2px 8px #22223b11", padding: 18, minWidth: 220, flex: "1 1 220px", display: "flex", flexDirection: "column", position: "relative" }}>
               {editingId === w.id ? (
                 <>
                   <input
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    style={{ marginRight: 8, padding: 6, borderRadius: 6, border: "1px solid #ccc" }}
+                    style={{ marginBottom: 8, padding: 6, borderRadius: 6, border: "1px solid #ccc" }}
                   />
-                  <input
-                    value={editDefinition}
-                    onChange={(e) => setEditDefinition(e.target.value)}
-                    style={{ marginRight: 8, padding: 6, borderRadius: 6, border: "1px solid #ccc" }}
-                  />
-                  <button onClick={() => saveEdit(w.id)} style={{ background: "#4a4e69", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600, marginRight: 6 }}>Save</button>
-                  <button onClick={cancelEdit} style={{ background: "#c9ada7", color: "#22223b", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }}>Cancel</button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => saveEdit(w.id)} disabled={updating} style={{ background: "#4a4e69", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }}>
+                      {updating ? "Saving..." : "Save"}
+                    </button>
+                    <button onClick={cancelEdit} style={{ background: "#c9ada7", color: "#22223b", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }}>Cancel</button>
+                  </div>
+                  {updateError && <div style={{ color: "#b00020", marginTop: 8 }}>{updateError}</div>}
                 </>
               ) : (
                 <>
-                  <b style={{ color: "#22223b" }}>{w.text}</b>
-                  <span style={{ margin: "0 10px", color: "#4a4e69" }}>:</span>
-                  <span style={{ flex: 1 }}>{w.definition}</span>
-                  <button style={{ marginLeft: 8, background: "#9a8c98", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }} onClick={() => startEdit(w)}>Edit</button>
-                  <button style={{ marginLeft: 6, background: "#b00020", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }} onClick={() => remove(w.id)}>Delete</button>
+                  <div style={{ fontWeight: 700, color: "#22223b", fontSize: 18 }}>{w.text}</div>
+                  <div style={{ color: "#4a4e69", margin: "8px 0 12px 0", minHeight: 18 }}>
+                    {w.definition ? w.definition : <span style={{ color: "#bbb" }}>No definition</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                    <button style={{ background: "#9a8c98", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }} onClick={() => startEdit(w)}>Edit</button>
+                    <button style={{ background: "#b00020", color: "#fff", border: 0, borderRadius: 6, padding: "6px 14px", fontWeight: 600 }} onClick={() => remove(w.id)}>Delete</button>
+                  </div>
                 </>
               )}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
